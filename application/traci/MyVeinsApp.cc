@@ -31,7 +31,7 @@ void MyVeinsApp::initialize(int stage)
     DemoBaseApplLayer::initialize(stage);
     if (stage == 0) {
         // Initializing members and pointers of your application goes here
-        EV << "Initializing RSU Application" << std::endl;
+        EV << "Initializing Car Application" << std::endl;
     }
     else if (stage == 1) {
         // Initializing members that require initialized other modules goes here
@@ -46,6 +46,7 @@ void MyVeinsApp::finish()
 
 void MyVeinsApp::onBSM(DemoSafetyMessage* bsm)
 {
+    EV << "onBSM called Application" << std::endl;
     DemoBaseApplLayer::setSpeed(bsm);
     // Your application has received a beacon message from another car or RSU
     // code for handling the message goes here
@@ -53,6 +54,7 @@ void MyVeinsApp::onBSM(DemoSafetyMessage* bsm)
 
 void MyVeinsApp::onWSM(BaseFrame1609_4* wsm)
 {
+    EV << "onWSM called Application" << std::endl;
     DemoBaseApplLayer::setSpeed(wsm);
     // Your application has received a data message from another car or RSU
     // code for handling the message goes here, see TraciDemo11p.cc for examples
@@ -60,19 +62,23 @@ void MyVeinsApp::onWSM(BaseFrame1609_4* wsm)
 
 void MyVeinsApp::onWSA(DemoServiceAdvertisment* wsa)
 {
+    EV << "onWSA called Application" << std::endl;
+    DemoBaseApplLayer::setSpeed(wsa);
     // Your application has received a service advertisement from another car or RSU
     // code for handling the message goes here, see TraciDemo11p.cc for examples
 }
 
 void MyVeinsApp::handleSelfMsg(cMessage* msg)
 {
-    DemoBaseApplLayer::handleSelfMsg(msg);
+    EV << "handleSelfMsg called Application" << std::endl;
+    DemoBaseApplLayer::handleLowerMsg(msg);
     // this method is for self messages (mostly timers)
     // it is important to call the DemoBaseApplLayer function for BSM and WSM transmission
 }
 
 void MyVeinsApp::handlePositionUpdate(cObject* obj)
 {
+    EV << "handlePositionUpdate called Application" << std::endl;
     DemoBaseApplLayer::handlePositionUpdate(obj);
     // the vehicle has moved. Code that reacts to new positions goes here.
     // member variables such as currentPosition and currentSpeed are updated in the parent class

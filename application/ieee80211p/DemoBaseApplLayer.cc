@@ -90,6 +90,7 @@ void DemoBaseApplLayer::initialize(int stage)
             EV_ERROR << "App wants to send data on SCH but MAC doesn't use any SCH. Sending all data on CCH" << std::endl;
         }
         simtime_t firstBeacon = simTime();
+        simtime_t secondBeacon = simTime();
 
         if (par("avoidBeaconSynchronization").boolValue() == true) {
 
@@ -105,6 +106,7 @@ void DemoBaseApplLayer::initialize(int stage)
 
             if (sendBeacons) {
                 scheduleAt(firstBeacon, sendBeaconEvt);
+                scheduleAt(secondBeacon, sendReduceEvt);
             }
         }
     }
@@ -214,9 +216,18 @@ void DemoBaseApplLayer::handleParkingUpdate(cObject* obj)
 void DemoBaseApplLayer::handleLowerMsg(cMessage* msg)
 {
 
+    EV << "Mensagem chegou no handleLowerMsg." << endl;
     BaseFrame1609_4* wsm = dynamic_cast<BaseFrame1609_4*>(msg);
-    ASSERT(wsm);
+    if (!wsm) {
+        EV << "A mensagem recebida não é do tipo BaseFrame1609_4." << endl;
+        return;
+    }
 
+    EV << "Mensagem recebida pelo carro." << endl;
+    if (SpeedLimitation* slm = dynamic_cast<SpeedLimitation*>(wsm)) {
+         EV << "Mensagem de redução de velocidade recebida pelo carro." << endl;
+         setSpeed(slm);
+    }
     if (DemoSafetyMessage* bsm = dynamic_cast<DemoSafetyMessage*>(wsm)) {
         receivedBSMs++;
         onBSM(bsm);
@@ -251,13 +262,13 @@ void DemoBaseApplLayer::handleSelfMsg(cMessage* msg)
         break;
     }
     case SEND_REDUCE_EVT: {
+        EV << "Disparando evento SEND_REDUCE_EVT no tempo: " << simTime() << endl;
         SpeedLimitation* bsm = new SpeedLimitation();
         populateWSM(bsm);
         sendDown(bsm);
-        setSpeed(bsm);
-        scheduleAt(simTime() + beaconInterval, sendBeaconEvt);
+        EV << "Mensagem enviada com kind SEND_REDUCE_EVT." << endl;
+        scheduleAt(simTime() + beaconInterval, sendReduceEvt);
         break;
-
     }
     default: {
         if (msg) EV_WARN << "APP: Error: Got Self Message of unknown kind! Name: " << msg->getName() << endl;
@@ -280,7 +291,7 @@ void DemoBaseApplLayer::finish()
 
 void DemoBaseApplLayer::setSpeed(BaseFrame1609_4* wsm)
 {
-    EV << "Recebendo mensagem com kind: " << wsm->getKind() << endl;
+    EV << "Evento setSpeeed invocado." << endl;
     if (wsm->getKind() == SEND_REDUCE_EVT) {
         SpeedLimitation* slm = dynamic_cast<SpeedLimitation*>(wsm);
         if (slm != nullptr) {
@@ -290,10 +301,7 @@ void DemoBaseApplLayer::setSpeed(BaseFrame1609_4* wsm)
             traciVehicle->setMaxSpeed(doubleSpeed);
             EV << "Evento de troca de velocidade concluído." << endl;
         }
-    } else {
-        EV << "Mensagem recebida com kind diferente de SEND_REDUCE_EVT." << endl;
     }
-
 }
 
 DemoBaseApplLayer::~DemoBaseApplLayer()
@@ -348,7 +356,7 @@ void DemoBaseApplLayer::checkAndTrackPacket(cMessage* msg)
         generatedWSAs++;
     }
     else if (dynamic_cast<BaseFrame1609_4*>(msg)) {
-        EV_TRACE << "sending down a wsm" << std::endl;
+        EV << "sending down a wsm" << std::endl;
         generatedWSMs++;
     }
 }
