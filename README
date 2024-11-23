@@ -1,5 +1,9 @@
-Veins tutorial example.
+Veins Simple Students Project.
+
+Sumo with Omnettp with Veins simulation to simulate a RSU in a speed dump (in a real cenario located in Avenida Anselmo Alves dos Santos, 1111, Tibery, Uberlandia, MG, 38405-167) witch send messages for a cars (nodes) and slow down this speed in its range area, using Vanet comunication.
 
 This simulation requires veins_launchd to be started and listening for 
-connections on a TCP socket, e.g. using "~/src/veins/bin/veins_launchd -vv".
+connections on a TCP socket, e.g. using "~/src/veins/bin/veins_launchd -vv", to starts sumo and conect this to Veins and Omnettp.
+
+The aplication folder is a copz of application in veins/src/application modified to this project.
 
